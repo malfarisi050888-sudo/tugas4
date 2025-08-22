@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Biodata – M. Alfarizi</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg1:#0a0f1e; /* biru gelap */
+      --bg2:#111827; /* abu biru */
+      --accent:#60a5fa; /* biru muda */
+      --accent-2:#38bdf8; /* cyan */
+      --card:rgba(255,255,255,.08);
+      --card-border:rgba(255,255,255,.12);
+      --text:#e5e7eb;
+      --muted:#94a3b8;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font-family:"Poppins", system-ui, -apple-system, Segoe UI, Roboto, sans-serif; color:var(--text);
+      background: radial-gradient(1200px 800px at 80% -10%, #1f2a44 0%, transparent 50%),
+                  radial-gradient(800px 600px at -10% 20%, #0b1b3f 0%, transparent 50%),
+                  linear-gradient(160deg, var(--bg1), var(--bg2));
+      overflow:hidden; /* biar canvas full screen rapi */
+    }
+
+    /* Partikel bintang halus */
+    .stars{position:fixed; inset:0; pointer-events:none; background:
+      radial-gradient(2px 2px at 20% 30%, rgba(255,255,255,.6) 50%, transparent 51%),
+      radial-gradient(1px 1px at 70% 20%, rgba(255,255,255,.4) 50%, transparent 51%),
+      radial-gradient(1.5px 1.5px at 40% 80%, rgba(255,255,255,.5) 50%, transparent 51%),
+      radial-gradient(1px 1px at 85% 65%, rgba(255,255,255,.35) 50%, transparent 51%);
+      animation: twinkle 6s ease-in-out infinite alternate;
+      mix-blend-mode: screen;
+      opacity:.35;
+    }
+    @keyframes twinkle { to { transform: translateY(-10px); opacity:.5; } }
+
+    /* Kanvas petir */
+    #lightning-canvas{position:fixed; inset:0; pointer-events:none; filter: drop-shadow(0 0 8px rgba(96,165,250,.9)) drop-shadow(0 0 16px rgba(56,189,248,.6));}
+
+    /* Kilatan layar saat petir menyambar */
+    .flash{position:fixed; inset:0; pointer-events:none; background:radial-gradient(circle at center, rgba(180,220,255,.35), rgba(180,220,255,0) 60%); opacity:0; transition:opacity .2s}
+    .flash.active{opacity:.9; transition:opacity .12s}
+
+    /* Dekor garis diagonal depan-belakang */
+    .grid-overlay{position:fixed; inset:-20% -20%; pointer-events:none; background: repeating-linear-gradient(115deg, rgba(255,255,255,.04) 0 2px, transparent 2px 40px); mask-image: radial-gradient(circle at 30% 10%, black 20%, transparent 70%)}
+
+    /* Kartu biodata */
+    .wrap{position:relative; z-index:2; min-height:100%; display:grid; place-items:center; padding:24px}
+    .card{
+      width:min(920px, 92vw);
+      background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      border:1px solid var(--card-border);
+      border-radius:24px; backdrop-filter: blur(14px) saturate(120%);
+      box-shadow: 0 10px 40px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.08);
+      overflow:hidden;
+    }
+    .header{
+      display:flex; align-items:center; gap:20px; padding:28px 28px 0 28px;
+    }
+    .avatar{
+      width:120px; aspect-ratio:1; border-radius:24px; overflow:hidden; border:1px solid var(--card-border); background:rgba(255,255,255,.06);
+      display:grid; place-items:center; position:relative;
+    }
+    .avatar img{width:100%; height:100%; object-fit:cover; display:block}
+    .avatar .hint{position:absolute; bottom:8px; left:8px; right:8px; font-size:10px; color:var(--muted); text-align:center; background:rgba(0,0,0,.35); padding:3px 6px; border-radius:8px}
+
+    .title{flex:1}
+    .title h1{margin:0; font-size:clamp(22px, 3.2vw, 34px); font-weight:700; letter-spacing:.3px}
+    .title p{margin:.4rem 0 0; color:var(--muted)}
+
+    .content{display:grid; grid-template-columns: 1.2fr .8fr; gap:22px; padding:24px 28px 28px}
+    @media (max-width: 800px){ .content{grid-template-columns: 1fr; } }
+
+    .section{background:var(--card); border:1px solid var(--card-border); border-radius:18px; padding:18px}
+    .section h2{margin:0 0 10px; font-size:18px; font-weight:600; letter-spacing:.3px}
+    .section ul{list-style:none; padding:0; margin:0}
+    .section li{padding:10px 0; display:flex; gap:10px; align-items:flex-start; border-bottom:1px dashed rgba(255,255,255,.08)}
+    .section li:last-child{border-bottom:none}
+    .badge{display:inline-flex; align-items:center; gap:8px; font-size:12px; padding:6px 10px; border-radius:999px; border:1px solid var(--card-border); background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02))}
+
+    .controls{display:flex; flex-wrap:wrap; gap:12px; align-items:center; padding:0 28px 24px}
+    .file-input{position:relative; overflow:hidden; display:inline-block}
+    .file-input input[type=file]{position:absolute; inset:0; opacity:0; cursor:pointer}
+    .btn{cursor:pointer; user-select:none; padding:10px 14px; border-radius:12px; border:1px solid var(--card-border); background:linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,.06)); color:var(--text); font-weight:600; letter-spacing:.2px; box-shadow:0 6px 18px rgba(0,0,0,.25)}
+    .btn:hover{transform:translateY(-1px)}
+    .btn:active{transform:translateY(0)}
+
+    /* Garis aksen di bawah kartu */
+    .glow-bar{height:12px; background:linear-gradient(90deg, transparent, var(--accent), var(--accent-2), transparent); filter: blur(8px); opacity:.7}
+
+    /* Footer kecil */
+    footer{position:fixed; right:12px; bottom:10px; font-size:11px; color:var(--muted); opacity:.7}
+    footer a{color:var(--text); opacity:.8}
+  </style>
+</head>
+<body>
+  <!-- Lapisan efek -->
+  <canvas id="lightning-canvas"></canvas>
+  <div class="flash" id="flash"></div>
+  <div class="stars"></div>
+  <div class="grid-overlay"></div>
+
+  <!-- Konten utama -->
+  <div class="wrap">
+    <div class="card">
+      <div class="header">
+        <div class="avatar" id="avatarBox">
+          <img id="foto" alt="c:\Users\HP\OneDrive\Gambar WhatsApp 2025-08-19 pukul 19.21.05_aaf9a08e.jpg" src="" />
+          <div class="hint">Tambah foto: klik tombol di bawah</div>
+        </div>
+        <div class="title">
+          <h1>Biodata – M. Alfarizi</h1>
+          <p class="badge">⚡ Kelas: XIRPL2</p>
+        </div>
+      </div>
+
+      <div class="content">
+        <section class="section">
+          <h2>Informasi Utama</h2>
+          <ul>
+            <li><strong>Nama</strong> : <span>M. Alfarizi</span></li>
+            <li><strong>Alamat</strong> : <span>Dusun Manggungan</span></li>
+            <li><strong>Kelas</strong> : <span>XIRPL2</span></li>
+            <li><strong>Tanggal Lahir</strong> : <span>19 Agustus 2009 (19/08/2009)</span></li>
+          </ul>
+        </section>
+        <section class="section">
+          <h2>Tentang</h2>
+          <p style="margin:0; line-height:1.7">Halo! Ini adalah halaman biodata sederhana dengan tampilan modern, latar belakang keren, dan efek petir dinamis. Kamu bisa menambahkan foto profil sendiri, mengunduh halaman ini, lalu dipakai di tugas sekolah atau portofolio.</p>
+        </section>
+      </div>
+
+      <div class="controls">
+        <label class="file-input btn">📷 Tambah / Ganti Foto
+          <input type="file" id="filePicker" accept="image/*" />
+        </label>
+        <button class="btn" id="btnFlash">⚡ Tes Petir</button>
+        <button class="btn" id="btnDownload">⬇️ Download HTML</button>
+      </div>
+
+      <div class="glow-bar"></div>
+    </div>
+  </div>
+
+  <footer>Made with ❤️ — efek petir via &lt;canvas&gt;</footer>
+
+  <script>
+    // ====== Upload & pratinjau foto ======
+    const filePicker = document.getElementById('filePicker');
+    const img = document.getElementById('foto');
+    filePicker.addEventListener('change', (e) => {
+      const f = e.target.files?.[0];
+      if(!f) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => { img.src = ev.target.result; };
+      reader.readAsDataURL(f);
+    });
+
+    // ====== Download halaman sebagai file ======
+    document.getElementById('btnDownload').addEventListener('click', () => {
+      const blob = new Blob([document.documentElement.outerHTML], {type: 'text/html'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'biodata_M-Alfarizi.html'; a.click();
+      URL.revokeObjectURL(url);
+    });
+
+    // ====== Efek Petir via Canvas ======
+    const canvas = document.getElementById('lightning-canvas');
+    const ctx = canvas.getContext('2d');
+    const flash = document.getElementById('flash');
+
+    function resize(){ canvas.width = innerWidth; canvas.height = innerHeight; }
+    addEventListener('resize', resize); resize();
+
+    // Gambar satu sambaran petir acak
+    function drawBolt(){
+      const startX = Math.random()*canvas.width;
+      const startY = -20;
+      const endY = Math.random()*canvas.height*0.75 + canvas.height*0.2;
+      let x = startX, y = startY;
+      const segments = Math.floor(20 + Math.random()*20);
+
+      ctx.save();
+      ctx.lineCap = 'round';
+      ctx.shadowBlur = 18;
+      ctx.shadowColor = 'rgba(130,200,255,0.9)';
+
+      // core terang
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      for(let i=0;i<segments;i++){
+        x += (Math.random()-0.5)*30; // menyimpang kiri-kanan
+        y += (endY - startY)/segments + Math.random()*6;
+        ctx.lineTo(x,y);
+      }
+      ctx.strokeStyle = 'rgba(255,255,255,0.95)';
+      ctx.lineWidth = 2.2;
+      ctx.stroke();
+
+      // glow biru di luar
+      ctx.beginPath();
+      ctx.moveTo(startX, startY);
+      x = startX; y = startY;
+      for(let i=0;i<segments;i++){
+        x += (Math.random()-0.5)*34; y += (endY - startY)/segments + Math.random()*8; ctx.lineTo(x,y);
+      }
+      ctx.strokeStyle = 'rgba(96,165,250,0.55)';
+      ctx.lineWidth = 5.5; ctx.stroke();
+
+      ctx.restore();
+
+      // percabangan kecil
+      const branches = 2 + Math.floor(Math.random()*3);
+      for(let b=0;b<branches;b++){
+        branchBolt(x, y);
+      }
+    }
+
+    function branchBolt(baseX, baseY){
+      let x = baseX, y = baseY;
+      const len = 6 + Math.random()*8;
+      ctx.save();
+      ctx.beginPath(); ctx.moveTo(x,y);
+      for(let i=0;i<len;i++){
+        x += (Math.random()-0.5)*22; y += Math.random()*28; ctx.lineTo(x,y);
+      }
+      ctx.strokeStyle = 'rgba(150,200,255,0.6)'; ctx.lineWidth = 1.4; ctx.stroke();
+      ctx.restore();
+    }
+
+    function strike(){
+      // kilatan layar
+      flash.classList.add('active');
+      setTimeout(()=> flash.classList.remove('active'), 80 + Math.random()*120);
+
+      // beberapa sambaran pada saat yang sama
+      const count = 1 + Math.floor(Math.random()*3);
+      for(let i=0;i<count;i++) drawBolt();
+
+      // hilangkan perlahan
+      setTimeout(()=>{ ctx.clearRect(0,0,canvas.width,canvas.height); }, 180);
+    }
+
+    // tombol uji petir
+    document.getElementById('btnFlash').addEventListener('click', strike);
+
+    // sambaran otomatis random
+    setInterval(()=>{ if(Math.random()<0.28) strike(); }, 1300);
+  </script>
+</body>
+</html>
